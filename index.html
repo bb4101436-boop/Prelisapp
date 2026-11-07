@@ -1,71 +1,208 @@
-<!-- ===== EMAIL LOGIN ONLY - Replace Phone Login ===== -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Preli - Chat App</title>
+<style>
+* { box-sizing: border-box; margin:0; padding:0; font-family: Arial, sans-serif; }
+body { background:#f0f2f5; }
+#login-screen { max-width:400px; margin:60px auto; background:white; padding:25px; border-radius:15px; box-shadow:0 2px 10px rgba(0,0,0,0.1); text-align:center; }
+#login-screen h2 { color:#075e54; margin-bottom:8px; }
+#login-screen p { color:#666; margin-bottom:20px; }
+#login-screen input { width:100%; padding:12px; margin-bottom:12px; border:1px solid #ddd; border-radius:8px; font-size:16px; }
+#login-screen button { width:100%; padding:12px; border:none; border-radius:8px; font-size:16px; cursor:pointer; margin-bottom:10px; }
+.btn-login { background:#075e54; color:white; }
+.btn-signup { background:#e9edef; color:#111; }
+#loginError { color:red; font-size:14px; }
+#app-screen { display:none; max-width:500px; margin:0 auto; background:white; min-height:100vh; }
+.app-header { background:#075e54; color:white; padding:15px; display:flex; justify-content:space-between; align-items:center; }
+.app-header h3 { font-size:20px; }
+.app-header button { background:white; color:#075e54; border:none; padding:6px 12px; border-radius:20px; cursor:pointer; }
+.tabs { display:flex; background:#fff; border-bottom:1px solid #ddd; }
+.tabs button { flex:1; padding:12px; border:none; background:white; cursor:pointer; font-weight:bold; }
+.tabs button.active { border-bottom:3px solid #075e54; color:#075e54; }
+.chat-item { display:flex; padding:12px; border-bottom:1px solid #f0f0f0; cursor:pointer; align-items:center; gap:12px; }
+.avatar { width:45px; height:45px; background:#25d366; color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:20px; }
+.chat-item b { display:block; }
+.chat-item span { color:#888; font-size:13px; }
+#chat-window { display:none; padding:15px; }
+#messages { height:300px; overflow-y:auto; border:1px solid #eee; padding:10px; border-radius:10px; margin-bottom:10px; background:#efeae2; }
+.msg { background:white; padding:8px 12px; border-radius:10px; margin-bottom:8px; max-width:80%; }
+.msg.me { background:#d9fdd3; margin-left:auto; }
+.input-row { display:flex; gap:8px; }
+.input-row input { flex:1; padding:10px; border-radius:20px; border:1px solid #ddd; }
+.input-row button { background:#075e54; color:white; border:none; padding:10px 18px; border-radius:20px; cursor:pointer; }
+#profile-section { display:none; padding:20px; }
+#profile-section input { width:100%; padding:12px; margin:10px 0; border:1px solid #ddd; border-radius:8px; }
+#profile-section button { background:#075e54; color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer; }
+.back-btn { margin-bottom:10px; }
+</style>
+</head>
+<body>
+
+<!-- LOGIN - EMAIL ONLY -->
 <div id="login-screen">
   <h2>Welcome to Preli</h2>
   <p>Login with your email</p>
-
   <input type="email" id="emailInput" placeholder="Enter your email" />
-  <br><br>
   <input type="password" id="passwordInput" placeholder="Enter your password" />
-  <br><br>
+  <button class="btn-login" onclick="loginWithEmail()">Login</button>
+  <button class="btn-signup" onclick="signupWithEmail()">Create New Account</button>
+  <p id="loginError"></p>
+  <p style="font-size:12px; margin-top:15px;">No phone number needed to login.<br>You can add phone later in Profile.</p>
+</div>
 
-  <button onclick="loginWithEmail()">Login</button>
-  <br><br>
-  <button onclick="signupWithEmail()">Create New Account</button>
-  <p id="loginError" style="color:red"></p>
+<!-- APP -->
+<div id="app-screen">
+  <div class="app-header">
+    <h3>Preli</h3>
+    <div>
+      <span id="userEmailDisplay" style="font-size:13px;"></span>
+      <button onclick="showProfile()">Profile</button>
+      <button onclick="logout()">Logout</button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="active" onclick="showChats(this)">Chats</button>
+    <button onclick="showProfile()">Profile</button>
+  </div>
+
+  <!-- CHAT LIST -->
+  <div id="chat-list">
+    <div class="chat-item" onclick="openChat('Preli Support')">
+      <div class="avatar">P</div><div><b>Preli Support</b><span>Welcome to Preli! Tap to chat</span></div>
+    </div>
+    <div class="chat-item" onclick="openChat('My Friend')">
+      <div class="avatar">F</div><div><b>My Friend</b><span>Hey, how are you?</span></div>
+    </div>
+    <div class="chat-item" onclick="openChat('Family Group')">
+      <div class="avatar">G</div><div><b>Family Group</b><span>Good morning everyone</span></div>
+    </div>
+  </div>
+
+  <!-- CHAT WINDOW -->
+  <div id="chat-window">
+    <button class="back-btn" onclick="backToList()">← Back</button>
+    <h3 id="chatName">Chat</h3>
+    <div id="messages"></div>
+    <div class="input-row">
+      <input type="text" id="msgInput" placeholder="Type a message..." />
+      <button onclick="sendMsg()">Send</button>
+    </div>
+  </div>
+
+  <!-- PROFILE - ADD PHONE LATER -->
+  <div id="profile-section">
+    <h3>My Profile</h3>
+    <p>Email: <b id="profileEmail"></b></p>
+    <hr style="margin:15px 0;">
+    <h3>Add Phone Number (Optional)</h3>
+    <p style="color:#666; font-size:14px;">You can add phone later, e no compulsory.</p>
+    <input type="tel" id="phoneLater" placeholder="e.g. +234 800 000 0000" />
+    <button onclick="savePhoneLater()">Save Phone</button>
+    <p id="phoneSaved" style="color:green; margin-top:10px;"></p>
+    <br>
+    <button onclick="backToList()">Back to Chats</button>
+  </div>
 </div>
 
 <script>
+let currentChat = 'Preli Support';
+
 function loginWithEmail() {
   const email = document.getElementById('emailInput').value.trim();
   const password = document.getElementById('passwordInput').value.trim();
-  if (!email || !password) {
-    document.getElementById('loginError').innerText = "Please enter email and password";
-    return;
-  }
-  // If you use Firebase:
-  // firebase.auth().signInWithEmailAndPassword(email, password)
-  // .then(() => { window.location.href = "home.html"; })
-  // .catch(e => { document.getElementById('loginError').innerText = e.message; });
-
-  // If you use local demo login (no Firebase):
+  if (!email || !password) { document.getElementById('loginError').innerText = "Please enter email and password"; return; }
+  if (!email.includes('@')) { document.getElementById('loginError').innerText = "Please enter valid email"; return; }
   localStorage.setItem('preli_user_email', email);
-  alert("Welcome " + email);
-  // Hide login, show app
-  document.getElementById('login-screen').style.display = 'none';
-  if (document.getElementById('app-screen')) {
-    document.getElementById('app-screen').style.display = 'block';
-  }
+  showApp(email);
 }
-
 function signupWithEmail() {
   const email = document.getElementById('emailInput').value.trim();
   const password = document.getElementById('passwordInput').value.trim();
-  if (!email || !password) {
-    document.getElementById('loginError').innerText = "Please enter email and password to create account";
-    return;
-  }
-  // If you use Firebase:
-  // firebase.auth().createUserWithEmailAndPassword(email, password)
-  // .then(() => { alert("Account created! Now login"); })
-  // .catch(e => { document.getElementById('loginError').innerText = e.message; });
-
+  if (!email || !password) { document.getElementById('loginError').innerText = "Enter email and password to create account"; return; }
   localStorage.setItem('preli_user_email', email);
-  alert("Account created for " + email);
+  alert("Account created for " + email + "! Welcome to Preli");
+  showApp(email);
 }
-</script>
-
-<!-- ===== ADD PHONE LATER - For Profile Page ===== -->
-<!-- Paste this inside your Profile / Settings page -->
-<div id="profile-phone">
-  <h3>Add Phone Number (Optional)</h3>
-  <input type="tel" id="phoneLater" placeholder="Add phone number later" />
-  <button onclick="savePhoneLater()">Save Phone</button>
-</div>
-
-<script>
+function showApp(email) {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app-screen').style.display = 'block';
+  document.getElementById('userEmailDisplay').innerText = email;
+  document.getElementById('profileEmail').innerText = email;
+  const savedPhone = localStorage.getItem('preli_user_phone');
+  if (savedPhone) document.getElementById('phoneLater').value = savedPhone;
+}
+function logout() {
+  localStorage.removeItem('preli_user_email');
+  document.getElementById('login-screen').style.display = 'block';
+  document.getElementById('app-screen').style.display = 'none';
+}
+function showChats(btn) {
+  document.getElementById('chat-list').style.display = 'block';
+  document.getElementById('chat-window').style.display = 'none';
+  document.getElementById('profile-section').style.display = 'none';
+  if(btn){ document.querySelectorAll('.tabs button').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); }
+}
+function showProfile() {
+  document.getElementById('chat-list').style.display = 'none';
+  document.getElementById('chat-window').style.display = 'none';
+  document.getElementById('profile-section').style.display = 'block';
+}
+function backToList() {
+  document.getElementById('chat-list').style.display = 'block';
+  document.getElementById('chat-window').style.display = 'none';
+  document.getElementById('profile-section').style.display = 'none';
+}
+function openChat(name) {
+  currentChat = name;
+  document.getElementById('chatName').innerText = name;
+  document.getElementById('chat-list').style.display = 'none';
+  document.getElementById('chat-window').style.display = 'block';
+  document.getElementById('profile-section').style.display = 'none';
+  const key = 'preli_msgs_' + name;
+  const saved = JSON.parse(localStorage.getItem(key) || '[]');
+  renderMsgs(saved);
+  if (saved.length === 0) {
+    const welcome = [{text: 'Hello! Welcome to Preli 👋', me:false}];
+    localStorage.setItem(key, JSON.stringify(welcome));
+    renderMsgs(welcome);
+  }
+}
+function renderMsgs(list) {
+  const box = document.getElementById('messages');
+  box.innerHTML = '';
+  list.forEach(m => {
+    const d = document.createElement('div');
+    d.className = 'msg' + (m.me ? ' me' : '');
+    d.innerText = m.text;
+    box.appendChild(d);
+  });
+  box.scrollTop = box.scrollHeight;
+}
+function sendMsg() {
+  const inp = document.getElementById('msgInput');
+  const text = inp.value.trim();
+  if (!text) return;
+  const key = 'preli_msgs_' + currentChat;
+  const list = JSON.parse(localStorage.getItem(key) || '[]');
+  list.push({text:text, me:true});
+  localStorage.setItem(key, JSON.stringify(list));
+  renderMsgs(list);
+  inp.value = '';
+}
 function savePhoneLater() {
   const phone = document.getElementById('phoneLater').value.trim();
   localStorage.setItem('preli_user_phone', phone);
-  alert("Phone saved: " + phone);
+  document.getElementById('phoneSaved').innerText = "Phone saved: " + phone;
+}
+// Auto-login if already logged in
+window.onload = function() {
+  const savedEmail = localStorage.getItem('preli_user_email');
+  if (savedEmail) showApp(savedEmail);
 }
 </script>
+</body>
+</html>
